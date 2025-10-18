@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 24px;
+  }
+  h1 { color: #38bdf8; margin-bottom: 12px; }
+  .container {
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 10px;
+    width: 95%;
+    max-width: 750px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    text-align: center;
+  }
+  input, button {
+    padding: 8px 10px;
+    margin: 4px;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    background-color: #0f172a;
+    color: #e2e8f0;
+  }
+  input:focus { outline: none; border-color: #38bdf8; }
+  button {
+    background-color: #38bdf8;
+    color: #0f172a;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  button:hover { background-color: #7dd3fc; }
+  pre {
+    background: #0f172a;
+    color: #d1d5db;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    text-align: left;
+    max-height: 300px;
+    overflow: auto;
+  }
+  h3 { color: #93c5fd; margin-top: 18px; }
+  .row { margin-bottom: 8px; }
+  label { color: #a5b4fc; }
+</style>
+</head>
+<body>
+  <div class="container">
+
+    <pre id="out">{ "ready": "run an action below to see response" }</pre>
+
+    <label>Base URL:
+      <input id="base" value="http://localhost/api" style="width:300px" />
+    </label>
+
+    <h3>Register / Login</h3>
+    <div class="row">
+      <input id="u" placeholder="username" value="steven">
+      <input id="p" type="password" placeholder="password" value="secret">
+      <button onclick="register()">Register</button>
+      <button onclick="login()">Login</button>
+    </div>
+
+    <h3>Venues</h3>
+    <div class="row">
+      <input id="vname" placeholder="name" value="City Arena">
+      <input id="vcity" placeholder="city" value="Springfield">
+      <button onclick="addVenue()">Add Venue (Auth)</button>
+      <button onclick="listVenues()">List Venues</button>
+    </div>
+
+    <h3>Concerts</h3>
+    <div class="row">
+      <input id="ctitle" placeholder="title" value="Rock Night">
+      <input id="cvenue" placeholder="venue_id" value="1">
+      <input id="cdate" placeholder="YYYY-MM-DD" value="2025-12-31">
+      <input id="cprice" placeholder="price" value="59.99">
+    </div>
+    <div class="row">
+      <button onclick="addConcert()">Add Concert (Auth)</button>
+      <button onclick="listConcerts()">List Concerts</button>
+    </div>
+
+    <h3>Bookings (Auth)</h3>
+    <div class="row">
+      <input id="concertId" placeholder="concert_id" value="1">
+      <input id="qty" placeholder="qty" value="2">
+      <button onclick="book()">Book</button>
+      <button onclick="myBookings()">My Bookings</button>
+    </div>
+  </div>
+
+<script>
+let token = null;
+const out = (x) => document.getElementById('out').textContent = JSON.stringify(x, null, 2);
+const base = () => document.getElementById('base').value;
+
+async function register() {
+  const r = await fetch(base()+"/register.php", {
+    method: "POST",
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      username: document.getElementById('u').value,
+      password: document.getElementById('p').value
+    })
+  });
+  out(await r.json());
+}
+
+async function login() {
+  const r = await fetch(base()+"/login.php", {
+    method: "POST",
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      username: document.getElementById('u').value,
+      password: document.getElementById('p').value
+    })
+  });
+  const j = await r.json();
+  token = j.token;
+  out(j);
+}
+
+async function addVenue() {
+  const r = await fetch(base()+"/venues.php", {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer '+token
+    },
+    body: JSON.stringify({
+      name: document.getElementById('vname').value,
+      city: document.getElementById('vcity').value
+    })
+  });
+  out(await r.json());
+}
+
+async function listVenues() {
+  const r = await fetch(base()+"/venues.php");
+  out(await r.json());
+}
+
+async function addConcert() {
+  const r = await fetch(base()+"/concerts.php", {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer '+token
+    },
+    body: JSON.stringify({
+      title: document.getElementById('ctitle').value,
+      venue_id: parseInt(document.getElementById('cvenue').value),
+      event_date: document.getElementById('cdate').value,
+      price: parseFloat(document.getElementById('cprice').value)
+    })
+  });
+  out(await r.json());
+}
+
+async function listConcerts() {
+  const r = await fetch(base()+"/concerts.php");
+  out(await r.json());
+}
+
+async function book() {
+  const r = await fetch(base()+"/bookings.php", {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer '+token
+    },
+    body: JSON.stringify({
+      concert_id: parseInt(document.getElementById('concertId').value),
+      qty: parseInt(document.getElementById('qty').value)
+    })
+  });
+  out(await r.json());
+}
+
+async function myBookings() {
+  const r = await fetch(base()+"/bookings.php", {
+    headers: {'Authorization': 'Bearer '+token}
+  });
+  out(await r.json());
+}
+</script>
+</body>
+</html>
