@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS concert_api_demo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE concert_api_demo;
+CREATE DATABASE IF NOT EXISTS concerts_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE concerts_db;
 
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
